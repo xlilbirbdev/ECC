@@ -1,14 +1,64 @@
 ---
 name: security-review
-description: Use this skill when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provides comprehensive security checklist and patterns.
+description: Security review for pending branch changes and general code security. Use when adding auth, handling user input, working with secrets, creating API endpoints, implementing payment features, or reviewing a branch diff for vulnerabilities. Provides pending-change audit workflow and comprehensive OWASP checklist.
 origin: ECC
 ---
 
 # Security Review Skill
 
-This skill ensures all code follows security best practices and identifies potential vulnerabilities.
+Two modes: (1) **Branch review** — audit pending changes on the current branch for security issues before merge; (2) **General checklist** — comprehensive security patterns for new features.
 
-## When to Activate
+## Branch Security Review
+
+Use this mode when asked to "security review the current branch" or "review pending changes for security issues."
+
+### 1. Get the Diff
+
+```bash
+git diff main...HEAD
+# or for a specific PR:
+gh pr diff <PR#>
+```
+
+### 2. Scan for High-Risk Patterns
+
+```bash
+# Hardcoded secrets
+grep -rn "password\|secret\|api_key\|token\|credential" --include="*.ts" --include="*.js" --include="*.py"
+
+# SQL concatenation
+grep -rn "query.*\+\|f\"SELECT\|f'SELECT" --include="*.py" --include="*.ts"
+
+# eval / exec
+grep -rn "eval(\|exec(\|execSync(" --include="*.js" --include="*.ts"
+
+# shell injection
+grep -rn "child_process\|subprocess\|os\.system\|shell=True"
+
+# Dangerous deserializers
+grep -rn "pickle\.loads\|yaml\.load(\|JSON\.parse.*req\."
+```
+
+### 3. Check the Changed Files Against OWASP Top 10
+
+For each changed file, evaluate which OWASP categories apply and verify the checklist sections below.
+
+### 4. Output Format
+
+Report findings ordered by severity:
+
+| Severity | Meaning |
+|----------|---------|
+| `critical` | Exploitable in production without special access |
+| `high` | Likely exploitable with common attacker capability |
+| `medium` | Exploitable under specific conditions |
+| `low` | Defense-in-depth improvements |
+
+For each finding: file:line, severity, vulnerability class, attack scenario, recommended fix.
+
+---
+
+## When to Use the General Checklist
 
 - Implementing authentication or authorization
 - Handling user input or file uploads
