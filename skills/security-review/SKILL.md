@@ -1,7 +1,8 @@
 ---
 name: security-review
-description: Security review for pending branch changes and general code security. Use when adding auth, handling user input, working with secrets, creating API endpoints, implementing payment features, or reviewing a branch diff for vulnerabilities. Provides pending-change audit workflow and comprehensive OWASP checklist.
-origin: ECC
+description: Use this skill when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provides comprehensive security checklist and patterns.
+metadata:
+  origin: ECC
 ---
 
 # Security Review Skill
@@ -116,7 +117,7 @@ export async function createUser(input: unknown) {
     return await db.users.create(validated)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, errors: error.errors }
+      return { success: false, errors: error.issues }
     }
     throw error
   }
